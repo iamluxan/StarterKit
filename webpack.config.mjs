@@ -6,14 +6,13 @@ import { fileURLToPath } from 'url';
 import webpack from 'webpack';
 import ESLintPlugin from 'eslint-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
-import CssoWebpackPlugin from 'csso-webpack-plugin';
 import LicensePlugin from 'webpack-license-plugin';
 import BrowserSyncPlugin from 'browser-sync-webpack-plugin';
 import SpriteLoaderPlugin from 'svg-sprite-loader/plugin.js';
 import autoprefixer from 'autoprefixer';
 
-// Pour équivalent __dirname en ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -43,9 +42,6 @@ export default {
     assets: true,
     timings: true,
     colors: true,
-    version: false,
-    warnings: false,
-    modules: false,
   },
 
   module: {
@@ -141,8 +137,6 @@ export default {
       context: path.resolve(__dirname, 'assets/scripts'),
     }),
 
-    ...(isProduction ? [new CssoWebpackPlugin({ forceMediaMerge: true })] : []),
-
     new LicensePlugin({
       outputFilename: 'thirdPartyNotice.json',
       licenseOverrides: {
@@ -179,11 +173,10 @@ export default {
             parallel: true,
             extractComments: false,
             terserOptions: {
-              compress: {
-                drop_console: true,
-              },
+              compress: { drop_console: true },
             },
           }),
+          new CssMinimizerPlugin(),
         ],
       }
     : {
