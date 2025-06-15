@@ -1,19 +1,26 @@
 // Active les traces de dépréciation dans le terminal
 process.traceDeprecation = true;
 
-const webpack = require('webpack');
-const path = require('path');
-const ESLintPlugin = require('eslint-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const TerserPlugin = require('terser-webpack-plugin');
-const CssoWebpackPlugin = require('csso-webpack-plugin').default;
-const LicensePlugin = require('webpack-license-plugin');
-const BrowserSyncPlugin = require('browser-sync-webpack-plugin');
+import path from 'path';
+import { fileURLToPath } from 'url';
+import webpack from 'webpack';
+import ESLintPlugin from 'eslint-webpack-plugin';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import TerserPlugin from 'terser-webpack-plugin';
+import CssoWebpackPlugin from 'csso-webpack-plugin';
+import LicensePlugin from 'webpack-license-plugin';
+import BrowserSyncPlugin from 'browser-sync-webpack-plugin';
+import SpriteLoaderPlugin from 'svg-sprite-loader/plugin.js';
+import autoprefixer from 'autoprefixer';
+
+// Pour équivalent __dirname en ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const isProduction = process.env.NODE_ENV === 'production';
 const isWatch = process.argv.includes('--watch');
 
-module.exports = {
+export default {
   mode: isProduction ? 'production' : 'development',
 
   entry: {
@@ -61,21 +68,20 @@ module.exports = {
           MiniCssExtractPlugin.loader,
           {
             loader: 'css-loader',
-            options: {
-              sourceMap: !isProduction,
-            },
+            options: { sourceMap: !isProduction },
           },
           {
             loader: 'postcss-loader',
             options: {
               sourceMap: !isProduction,
+              postcssOptions: {
+                plugins: [autoprefixer()],
+              },
             },
           },
           {
             loader: 'sass-loader',
-            options: {
-              sourceMap: !isProduction,
-            },
+            options: { sourceMap: !isProduction },
           },
         ],
       },
@@ -85,23 +91,39 @@ module.exports = {
           MiniCssExtractPlugin.loader,
           {
             loader: 'css-loader',
-            options: {
-              sourceMap: !isProduction,
-            },
+            options: { sourceMap: !isProduction },
           },
           {
             loader: 'postcss-loader',
             options: {
               sourceMap: !isProduction,
+              postcssOptions: {
+                plugins: [autoprefixer()],
+              },
             },
           },
         ],
       },
       {
+        test: /\.svg$/,
+        include: path.resolve(__dirname, 'assets/icons'),
+        use: [
+          {
+            loader: 'svg-sprite-loader',
+            options: {
+              extract: true,
+              spriteFilename: path.join('..', 'icons', 'sprite.svg'),
+            },
+          },
+          'svgo-loader',
+        ],
+      },
+      {
         test: /\.(png|woff2?|eot|otf|ttf|svg|jpe?g|gif)(\?[a-z0-9=\.]+)?$/,
+        exclude: path.resolve(__dirname, 'assets/icons'),
         type: 'asset/resource',
         generator: {
-            filename: '../css/[hash][ext]',
+          filename: 'dist/css/[hash][ext]',
         },
       },
     ],
@@ -116,7 +138,6 @@ module.exports = {
       extensions: ['js'],
       emitWarning: true,
       failOnError: false,
-      eslintPath: require.resolve('eslint'),
       context: path.resolve(__dirname, 'assets/scripts'),
     }),
 
@@ -130,11 +151,13 @@ module.exports = {
       replenishDefaultLicenseTexts: true,
     }),
 
+    new SpriteLoaderPlugin({ plainSprite: true }),
+
     ...(isWatch
       ? [
           new BrowserSyncPlugin(
             {
-              proxy: 'http://localhost:8000', // Change ici si ton serveur PHP est différent
+              proxy: 'http://localhost:8000',
               files: ['**/*.php'],
               injectChanges: true,
               open: false,

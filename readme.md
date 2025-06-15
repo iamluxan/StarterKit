@@ -1,6 +1,6 @@
-# Afec Starter Kit
+# Starter Kit
 
-**Starter Kit Afec**, un point de départ simple pour tout projet front-end utilisant Webpack, Sass et JavaScript.
+**Starter Kit**, un point de départ simple pour tout projet front-end utilisant Webpack, Sass et JavaScript.
 
 Ce projet est conçu pour apprendre à organiser son code, automatiser les tâches courantes (compilation, linting…) et comprendre le fonctionnement de la chaîne de production moderne côté front-end.
 
@@ -10,16 +10,11 @@ Ce projet est conçu pour apprendre à organiser son code, automatiser les tâch
 
 Avant de commencer, assure-toi d’avoir Node.js installé sur ta machine.
 
-1. Clone le dépôt :
-   ```bash
-   git clone https://github.com/nextader/afecstarter.git
-   cd afec-starter-kit
-   ```
-
-2. Installe les dépendances :
-   ```bash
-   npm install
-   ```
+```bash
+git clone https://github.com/iamluxan/StarterKit.git
+cd StarterKit
+npm install
+```
 
 ---
 
@@ -28,7 +23,7 @@ Avant de commencer, assure-toi d’avoir Node.js installé sur ta machine.
 | Commande              | Description |
 |-----------------------|-------------|
 | `npm run watch`       | Lance Webpack en mode développement et surveille les fichiers. |
-| `npm run build`       | Compile le projet en mode production (fichiers minifiés dans `dist/`). |
+| `npm run build`       | Compile le projet en mode production (fichiers minifiés dans `public/dist/`). |
 | `npm run scss-lint`   | Analyse les fichiers SCSS avec Stylelint. |
 | `npm run scss-fix`    | Corrige automatiquement les erreurs SCSS quand c’est possible. |
 
@@ -36,11 +31,9 @@ Avant de commencer, assure-toi d’avoir Node.js installé sur ta machine.
 
 ## Configuration Webpack
 
-Le fichier principal de configuration est `webpack.config.cjs`.
+Le fichier principal de configuration est `webpack.config.js`.
 
 ### Entrée
-
-Le point d’entrée est défini ainsi :
 
 ```js
 entry: {
@@ -48,86 +41,110 @@ entry: {
 }
 ```
 
-Cela signifie que Webpack construit à partir de ces deux fichiers (JS et SCSS).
-
 ### Sortie
 
-Les fichiers générés sont déposés dans :
-
-- `dist/js/` pour le JavaScript
-- `dist/css/` pour le CSS
+- `public/dist/js/` pour le JavaScript
+- `public/dist/css/` pour le CSS
+- `public/dist/icons/sprite.svg` pour le sprite SVG
 
 ### Traitement du code
 
 #### JavaScript
 
 - Transpilation via Babel (`@babel/preset-env`)
-- Compatible avec les navigateurs récents
+- Compatible avec les navigateurs modernes
 - Exclusion de `node_modules`
 
 #### SCSS / CSS
 
 - Traitement complet de `.scss` et `.css`
 - Génération de source maps en mode développement
-- Stack utilisée : `sass-loader` → `postcss-loader` → `css-loader` → `MiniCssExtractPlugin`
+- Stack utilisée : `sass-loader` → `postcss-loader` (Autoprefixer) → `css-loader` → `MiniCssExtractPlugin`
 
 #### Assets
 
-- Fichiers comme `.png`, `.svg`, `.woff`, `.jpg`, etc. sont traités automatiquement
-- Ils sont copiés dans `dist/css/` avec un nom unique (hashé)
-- Tu peux les utiliser dans ton SCSS avec des chemins relatifs
+- Les fichiers comme `.png`, `.svg`, `.woff`, `.jpg`, etc. sont copiés automatiquement avec un nom unique (hashé)
+- Ils peuvent être utilisés dans les fichiers SCSS avec des chemins relatifs
 
 ---
 
 ## Utilisation des images dans les fichiers SCSS
 
-Les images que tu veux appeler depuis ton SCSS doivent être placées dans un dossier comme :
-
-```
-assets/images/
-```
-
-Puis, dans ton fichier SCSS (`base.scss` par exemple), tu peux les appeler ainsi :
+Place tes images dans `assets/images/` puis dans un fichier SCSS :
 
 ```scss
 background-image: url('../images/mon-image.jpg');
 ```
 
-Webpack va :
+Webpack :
 
-- détecter l’image appelée
-- la copier dans le dossier `dist/css/` avec un nom hashé
-- mettre à jour automatiquement l’URL dans le CSS final
+- copie automatiquement l’image dans `public/dist/css/`
+- met à jour l’URL dans le CSS final
 
-Veille à :
+Ne stocke jamais d’images directement dans `dist/` (il est régénéré à chaque compilation).
 
-- toujours utiliser un chemin relatif correct (depuis ton fichier `.scss`)
-- ne jamais stocker d’images directement dans `dist/` (ce dossier est réinitialisé à chaque compilation)
+---
+
+## Système de sprite SVG
+
+Le système de sprite est géré via `svg-sprite-loader`.
+
+### Où mettre tes icônes
+
+Place tous tes fichiers `.svg` dans :
+
+```
+assets/icons/
+```
+
+### Génération automatique
+
+Webpack va créer un sprite global dans :
+
+```
+public/dist/icons/sprite.svg
+```
+
+### Chargement automatique
+
+Ajoute dans ton JS (ex : dans `base.js`) :
+
+```js
+const icons = require.context('../icons', false, /\.svg$/);
+```
+
+### Utilisation dans le HTML
+
+```html
+<svg class="icon">
+  <use xlink:href="/dist/icons/sprite.svg#nom-de-l-icone" />
+</svg>
+```
+
+Remplace `nom-de-l-icone` par le nom du fichier `.svg` (sans extension).
 
 ---
 
 ## Linting
 
-- ESLint est configuré via `eslint.config.js` (format flat config, ESLint v9)
-- Il n’y a plus de fichier `.eslintignore` : les fichiers à ignorer sont définis dans la config
-- Stylelint est utilisé pour les fichiers SCSS via les scripts disponibles
+- ESLint est configuré avec `eslint.config.js` (format flat config - ESLint v9)
+- Stylelint est utilisé pour les SCSS
+- Les fichiers ignorés sont définis dans la config, pas dans `.eslintignore`
 
 ---
 
 ## Mode production
 
-Quand tu exécutes :
-
 ```bash
 npm run build
 ```
 
-Voici ce qui se passe :
+Cela :
 
-- Le projet passe en `mode: production`
-- Le JS est minifié avec `terser-webpack-plugin` (les `console.log` sont supprimés)
-- Le CSS est optimisé avec `csso-webpack-plugin`
-- Un fichier `thirdPartyNotice.json` est généré avec les licences des dépendances
+- active `mode: production`
+- minifie le JS avec `terser-webpack-plugin`
+- optimise le CSS avec `csso-webpack-plugin`
+- génère `thirdPartyNotice.json` avec les licences
 
 ---
 
@@ -139,14 +156,19 @@ Voici ce qui se passe :
 │   │   └── base.js
 │   ├── styles/
 │   │   └── base.scss
+│   ├── icons/
+│   │   └── mon-icone.svg
 │   └── images/
 │       └── mon-image.jpg
-├── dist/
-│   ├── js/
-│   └── css/
+├── public/
+│   ├── dist/
+│   │   ├── js/
+│   │   ├── css/
+│   │   └── icons/
+│   │       └── sprite.svg
 ├── index.html
 ├── package.json
-├── webpack.config.cjs
+├── webpack.config.js
 ├── eslint.config.js
 └── .gitignore
 ```
