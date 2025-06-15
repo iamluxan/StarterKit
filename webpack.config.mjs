@@ -29,6 +29,7 @@ export default {
   output: {
     path: path.resolve(__dirname, 'dist/js'),
     filename: '[name].js',
+    clean: true,
   },
 
   resolve: {

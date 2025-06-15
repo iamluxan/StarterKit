@@ -1,7 +1,7 @@
 {
   "name": "starter-kit",
-  "version": "1.0.1",
-  "description": "Starter kit",
+  "version": "1.0.0",
+  "description": "Kit de démarrage Webpack + Sass + Sprite SVG",
   "scripts": {
     "build": "cross-env NODE_ENV=production webpack --progress",
     "watch": "webpack --progress --watch",
@@ -9,8 +9,8 @@
     "scss-lint": "stylelint \"**/*.scss\" --formatter verbose",
     "scss-fix": "stylelint \"**/*.scss\" --fix"
   },
-  "author": "Afec",
-  "license": "",
+  "author": "Touchet Laurent",
+  "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.27.1",
     "@babel/preset-env": "^7.27.2",
@@ -22,7 +22,6 @@
     "css-loader": "^7.1.2",
     "css-minimizer-webpack-plugin": "^7.0.2",
     "eslint": "^9.26.0",
-    "eslint-plugin-react": "^7.37.5",
     "eslint-webpack-plugin": "^5.0.1",
     "globals": "^16.1.0",
     "mini-css-extract-plugin": "^2.9.2",
